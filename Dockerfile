@@ -22,17 +22,27 @@ COPY licenses /licenses
 #Adding EPEL Repo for software - pure-ftpd
 RUN rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 
-#Add necessary RHEL repos JRE and Jenkins
-RUN yum repolist --disablerepo=* && \
-    yum-config-manager --disable \* > /dev/null && \
-yum-config-manager --enable rhel-7-server-rpms > /dev/null && \
-yum-config-manager --enable rhel-7-server-extras-rpms > /dev/null && \
-yum-config-manager --enable rhel-7-server-ose-3.5-rpms > /dev/null && \
-yum -y install docker && yum -y install jre && yum -y install jenkins && yum -y install git && yum install -y atomic-openshift-clients-3.5.5.31-1.git.0.b6f55a2.el7.x86_64
+## Add necessary Red Hat repos here
+RUN REPOLIST=rhel-7-server-rpms,rhel-7-server-optional-rpms,rhel-7-server-ose-3.5-rpms \
+### Add your package needs here
+    INSTALL_PKGS="docker jre jenkins git atomic-openshift-clients-3.5.5.31-1.git.0.b6f55a2.el7.x86_64 " && \
+    yum -y update-minimal --disablerepo "*" --enablerepo rhel-7-server-rpms --setopt=tsflags=nodocs \
+      --security --sec-severity=Important --sec-severity=Critical && \
+    yum -y install --disablerepo "*" --enablerepo ${REPOLIST} --setopt=tsflags=nodocs ${INSTALL_PKGS} && \
+### help file markdown to man conversion
+    yum clean all
 
-RUN   yum -y update-minimal --setopt=tsflags=nodocs \
---security --sec-severity=Important --sec-severity=Critical && \
-yum clean all
+#Add necessary RHEL repos JRE and Jenkins
+#RUN yum repolist --disablerepo=* && \
+#    yum-config-manager --disable \* > /dev/null && \
+#yum-config-manager --enable rhel-7-server-rpms > /dev/null && \
+#yum-config-manager --enable rhel-7-server-extras-rpms > /dev/null && \
+#yum-config-manager --enable rhel-7-server-ose-3.5-rpms > /dev/null && \
+#yum -y install docker && yum -y install jre && yum -y install jenkins && yum -y install git && yum install -y atomic-openshift-clients-3.5.5.31-1.git.0.b6f55a2.el7.x86_64
+
+#RUN   yum -y update-minimal --setopt=tsflags=nodocs \
+#--security --sec-severity=Important --sec-severity=Critical && \
+#yum clean all
  
 EXPOSE 8080
 
